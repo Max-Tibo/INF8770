@@ -101,14 +101,14 @@ row=image[len(image)-1,:]
 image = np.row_stack((row,image))
 
 # prediction matrix
-matpred = [[0.33,0.33],[0.33,0.0]]
+# matpred = [[0.33,0.33],[0.33,0.0]]
 
 # calculate images predictions and errors
 erreur = np.zeros((len(image)-2,len(image[0])-2))
 imagepred = np.zeros((len(image)-2,len(image[0])-2))
 for i in range(1,len(image)-2):
     for j in range(1,len(image[0])-2):
-        imagepred[i][j]=image[i-1][j-1]*matpred[0][0]+image[i-1][j]*matpred[0][1]+image[i][j-1]*matpred[1][0]
+        imagepred[i][j]=image[i][j-1]+image[i-1][j]-image[i-1][j-1]  # imagepred[i][j]=image[i-1][j-1]*matpred[0][0]+image[i-1][j]*matpred[0][1]+image[i][j-1]*matpred[1][0]
         erreur[i][j]=imagepred[i][j]-image[i][j]
 
 img=erreur.astype('uint8')
