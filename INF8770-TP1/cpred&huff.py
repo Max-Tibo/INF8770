@@ -29,7 +29,7 @@ def rgb2gray(img):
 	return gray_img
 
 def get2smallest(data):			# can be used instead of inbuilt function get(). was not used in  implementation
-    first = second = 1;
+    first = second = 1
     fid=sid=0
     for idx,element in enumerate(data):
         if (element < first):
