@@ -80,54 +80,62 @@ def huffman_traversal(root_node,tmp_array,f):		# traversal of the tree to genera
 		f.write(wr_str)		# write the color and the code to a file
 	return
 
-start = time.time()
+def predicteur(nAlgo, imagetocompress):
+	erreur = np.zeros((len(imagetocompress)-2,len(imagetocompress[0])-2))
+	imagepred = np.zeros((len(imagetocompress)-2,len(imagetocompress[0])-2))
+	if(nAlgo == 1):
+		# prediction matrix
+		matpred = [[0.33,0.33],[0.33,0.0]]
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 2):
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=image[i][j-1]+image[i-1][j]-image[i-1][j-1]
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	return erreur.astype('uint8')
 
-# convert a rgb image to gray
-imagelue = imread('test.png')
-image=imagelue.astype('float')
-image=rgb2gray(image)
+for p in range(1,3):
+	start = time.time()
 
-# compute histogram of pixels
-input_bits = image.shape[0]*image.shape[1]*8	# calculate number of bits in grayscale 
+	# convert a rgb image to gray
+	imagelue = imread('test.png')
+	image=imagelue.astype('float')
+	image=rgb2gray(image)
 
-# double images borders to have pixels to predict the images borders 
-col=image[:,0]
-image = np.column_stack((col,image))
-col=image[:,len(image[0])-1]
-image = np.column_stack((col,image))
-row=image[0,:]
-image = np.row_stack((row,image))
-row=image[len(image)-1,:]
-image = np.row_stack((row,image))
+	# compute histogram of pixels
+	input_bits = image.shape[0]*image.shape[1]*8	# calculate number of bits in grayscale 
 
-# prediction matrix
-# matpred = [[0.33,0.33],[0.33,0.0]]
+	# double images borders to have pixels to predict the images borders 
+	col=image[:,0]
+	image = np.column_stack((col,image))
+	col=image[:,len(image[0])-1]
+	image = np.column_stack((col,image))
+	row=image[0,:]
+	image = np.row_stack((row,image))
+	row=image[len(image)-1,:]
+	image = np.row_stack((row,image))
 
-# calculate images predictions and errors
-erreur = np.zeros((len(image)-2,len(image[0])-2))
-imagepred = np.zeros((len(image)-2,len(image[0])-2))
-for i in range(1,len(image)-2):
-    for j in range(1,len(image[0])-2):
-        imagepred[i][j]=image[i][j-1]+image[i-1][j]-image[i-1][j-1]  # imagepred[i][j]=image[i-1][j-1]*matpred[0][0]+image[i-1][j]*matpred[0][1]+image[i][j-1]*matpred[1][0]
-        erreur[i][j]=imagepred[i][j]-image[i][j]
+	# calculate images predictions and errors
+	img=predicteur(p,image)
 
-img=erreur.astype('uint8')
+	# compute histogram of pixels
+	hist = np.bincount(img.ravel(),minlength=256)
 
-# compute histogram of pixels
-hist = np.bincount(img.ravel(),minlength=256)
+	probabilities = hist/np.sum(hist)		# a priori probabilities from frequencies
 
-probabilities = hist/np.sum(hist)		# a priori probabilities from frequencies
+	root_node = tree(probabilities)			# create the tree using the probs.
+	tmp_array = np.ones([128],dtype=int)
+	huffman_traversal.output_bits = np.empty(256,dtype=int) 
+	huffman_traversal.count = 0
+	f = open('codes.txt','w')
+	huffman_traversal(root_node,tmp_array,f)		# traverse the tree and write the codes
 
-root_node = tree(probabilities)			# create the tree using the probs.
-tmp_array = np.ones([128],dtype=int)
-huffman_traversal.output_bits = np.empty(256,dtype=int) 
-huffman_traversal.count = 0
-f = open('codes.txt','w')
-huffman_traversal(root_node,tmp_array,f)		# traverse the tree and write the codes
+	end = time.time()
 
-end = time.time()
-
-compression = (1-np.sum(huffman_traversal.output_bits*hist)/input_bits)*100	# compression rate
-time = end - start  # compression time of combined methods
-print('Compression is ',compression,' percent')
-print('Time to compress ',round(time, 3),' seconds')
+	compression = (1-np.sum(huffman_traversal.output_bits*hist)/input_bits)*100	# compression rate
+	timeCompression = end - start  # compression time of combined methods
+	print('Compression is ',compression,' percent')
+	print('Time to compress ',round(timeCompression, 3),' seconds')
