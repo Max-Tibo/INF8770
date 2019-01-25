@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import time
 
 # checks whether a character is usable for a definition
 def char_usable(char, text):
 	good = [9, 10, 13]; # "safe" characters with ordinals < 32
-	if (char <= 255 and chr(char) in text) or (char < 32 and char not in good):
+	if (char <= 255 and chr(char).encode('ascii', errors='replace') in text) or (char < 32 and char not in good):
 		return False # not usable, try another one
 	else: return True # usable
 	
@@ -15,7 +16,7 @@ def compress(text):
 	dict_char = 9
 	while not char_usable(dict_char, text): dict_char += 1 # find dictionary-delimiting character
 	if dict_char > 255:
-		print "Document uses all ASCII characters and is uncompressable."
+		print("Document uses all ASCII characters and is uncompressable.")
 		exit(2)
 
 	while True: # infinite loop
@@ -34,12 +35,12 @@ def compress(text):
 				large_pair = pair
 				large = amount # use it
 		if large == 1 or character > 255: break # if there are no common pairs or we are out of characters to define, exit the loop
-		text = text.replace(large_pair, chr(character)) # perform the replacement with the definition
-		dictionary.append([large_pair, chr(character)]) # add the definition to the dictionary
-	dict_str = chr(dict_char) # get the dictionary-delimiting character
+		text = text.replace(large_pair, chr(character).encode('ascii', errors='replace')) # perform the replacement with the definition
+		dictionary.append([large_pair, chr(character).encode('ascii', errors='replace')]) # add the definition to the dictionary
+	dict_str = chr(dict_char).encode('ascii', errors='replace') # get the dictionary-delimiting character
 	for item in dictionary: # convert the dictionary into a string
 		dict_str += item[0] + item[1]
-	return chr(dict_char) + text + dict_str # construct the final compressed string with all information necessary
+	return chr(dict_char).encode('ascii', errors='replace') + text + dict_str # construct the final compressed string with all information necessary
 
 # Byte-pair decompression
 # reconstructs the dictionary, then applies it
@@ -64,34 +65,38 @@ def is_compressed(text):
 	# first character in document (dictionary character) only appears elsewhere once: probably compressed using this algorithm 
 	return True if text[1:].count(text[0]) == 1 else False  
 
-choice = raw_input("[c]ompress or [d]ecompress: ")
-input = raw_input("Enter file to process: ")
+choice = input("[c]ompress or [d]ecompress: ")
+input = input("Enter file to process: ")
 
 # Opens the file
 try:
 	file = open(input, "rb")
 	text = file.read()
 except IOError:
-	print "Can't read input file."
+	print("Can't read input file.")
 	exit(2)
 
 # Runs selected option
 if choice == "c":
+	start = time.time()
 	result = compress(text)
-	print "----------"
-	print "Original length:\t" + str(len(text)) + " bytes"
-	print "Compressed length:\t" + str(len(result)) + " bytes (" + str(round((float(len(result)) / float(len(text))) * 100, 2)) + "% of original size)"
-	print "----------"
+	end = time.time()
+	timeCompression = end - start
+	print("----------")
+	print("Original length:\t" + str(len(text)) + " bytes")
+	print("Compressed length:\t" + str(len(result)) + " bytes (" + str(round((float(len(result)) / float(len(text))) * 100, 2)) + "% of original size)")
+	print('Time to compress ',round(timeCompression, 3),' seconds')
+	print ("----------")
 elif is_compressed(text): result = decompress(text)
 else:
-	print "Input file not compressed!"
+	print("Input file not compressed!")
 	exit()
 	
-new_file = raw_input("Enter output file (or leave blank to display): ")
+new_file = input("Enter output file (or leave blank to display): ")
 
 # Writes to output file
 if len(new_file):
 	new = open(new_file, "wb")
 	new.write(result)
 	new.close()
-else: print result
+else: print(result)
