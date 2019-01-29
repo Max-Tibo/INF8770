@@ -84,6 +84,7 @@ def predicteur(nAlgo, imagetocompress):
 	erreur = np.zeros((len(imagetocompress)-2,len(imagetocompress[0])-2))
 	imagepred = np.zeros((len(imagetocompress)-2,len(imagetocompress[0])-2))
 	if(nAlgo == 1):
+		print('Prediction matrix')
 		# prediction matrix
 		matpred = [[0.33,0.33],[0.33,0.0]]
 		for i in range(1,len(imagetocompress)-2):
@@ -91,6 +92,7 @@ def predicteur(nAlgo, imagetocompress):
 				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]
 				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
 	if(nAlgo == 2):
+		print('Linear')
 		for i in range(1,len(imagetocompress)-2):
 			for j in range(1,len(imagetocompress[0])-2):
 				imagepred[i][j]=image[i][j-1]+image[i-1][j]-image[i-1][j-1]
@@ -137,5 +139,6 @@ for p in range(1,3):
 
 	compression = (1-np.sum(huffman_traversal.output_bits*hist)/input_bits)*100	# compression rate
 	timeCompression = end - start  # compression time of combined methods
-	print('Compression is ',compression,' percent')
+	print('Compression rate is ',round(compression, 3),' %')
 	print('Time to compress ',round(timeCompression, 3),' seconds')
+	print('')

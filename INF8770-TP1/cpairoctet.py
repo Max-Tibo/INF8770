@@ -84,7 +84,7 @@ if choice == "c":
 	timeCompression = end - start
 	print("----------")
 	print("Original length:\t" + str(len(text)) + " bytes")
-	print("Compressed length:\t" + str(len(result)) + " bytes (" + str(round((float(len(result)) / float(len(text))) * 100, 2)) + "% of original size)")
+	print("Compressed length:\t" + str(len(result)) + " bytes (" + str(round((1 - float(len(result)) / float(len(text))) * 100, 2)) + "% compression rate)")
 	print('Time to compress ',round(timeCompression, 3),' seconds')
 	print ("----------")
 elif is_compressed(text): result = decompress(text)
