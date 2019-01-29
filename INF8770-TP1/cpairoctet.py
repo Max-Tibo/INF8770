@@ -92,11 +92,11 @@ else:
 	print("Input file not compressed!")
 	exit()
 	
-new_file = input("Enter output file (or leave blank to display): ")
+#new_file = input("Enter output file (or leave blank to display): ")
 
 # Writes to output file
-if len(new_file):
-	new = open(new_file, "wb")
-	new.write(result)
-	new.close()
-else: print(result)
+#if len(new_file):
+#	new = open(new_file, "wb")
+#	new.write(result)
+#	new.close()
+#else: print(result)
