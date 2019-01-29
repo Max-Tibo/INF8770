@@ -4,6 +4,7 @@ import time
 import numpy as np
 from scipy.misc import imread,imresize
 
+# convert rgb image to gray and to bytes array
 def rgb2gray(img):
 	gray_img = np.rint(img[:,:,0]*0.2989 + img[:,:,1]*0.5870 + img[:,:,2]*0.1140)
 	gray_img = gray_img.astype(int)
