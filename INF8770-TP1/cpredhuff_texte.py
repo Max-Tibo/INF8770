@@ -117,7 +117,6 @@ for p in range(1,4):
 		txtasint[i] = ord(txt[i])
 	# calculate predictions and errors
 	prediction=predicteur(p,txtasint)
-	print(prediction)
 	# compute histogram
 	hist = np.bincount(prediction.ravel(),minlength=256)
 
@@ -132,7 +131,7 @@ for p in range(1,4):
 
 	end = time.time()
 
-	compression = (1-np.sum(huffman_traversal.output_bits*hist)/float(len(text2compress)))*100	# compression rate
+	compression = (1-np.sum(huffman_traversal.output_bits*hist/8)/float(len(text2compress)))*100	# compression rate
 	timeCompression = end - start  # compression time of combined methods
 	print('Compression rate is ',round(compression, 3),' %')
 	print('Time to compress ',round(timeCompression, 3),' seconds')
