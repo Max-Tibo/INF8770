@@ -92,18 +92,58 @@ def predicteur(nAlgo, imagetocompress):
 				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]
 				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
 	if(nAlgo == 2):
-		print('Linear')
+		print('jpeg4')
 		for i in range(1,len(imagetocompress)-2):
 			for j in range(1,len(imagetocompress[0])-2):
-				imagepred[i][j]=image[i][j-1]+image[i-1][j]-image[i-1][j-1]
+				imagepred[i][j]=imagetocompress[i][j-1]+imagetocompress[i-1][j]-imagetocompress[i-1][j-1]
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 3):
+		print('jpeg7')
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=(imagetocompress[i][j-1]+imagetocompress[i-1][j])/2
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 4):
+		print('p2')
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=imagetocompress[i][j-1]+(imagetocompress[i-1][j+1]-imagetocompress[i-1][j-1])/2
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 5):
+		print('p3')
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=(0.66)*(imagetocompress[i][j-1]+imagetocompress[i-1][j])-(0.33)*imagetocompress[i-1][j-1]
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 6):
+		print('pr2')
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=(2*imagetocompress[i][j-1]+imagetocompress[i-1][j])/3
+				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
+	if(nAlgo == 7):
+		print('heuristic - test')
+		matpred = [[0.25,0.25],[0.25,0.25]]
+		for i in range(1,len(imagetocompress)-2):
+			for j in range(1,len(imagetocompress[0])-2):
+				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]+imagetocompress[i-1][j+1]*matpred[1][1]
 				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
 	return erreur.astype('uint8')
 
-for p in range(1,3):
+input = input("Enter file to process: ")
+
+# Opens the file
+try:
+	imagelue = imread(input)
+	image=imagelue.astype('float')
+except IOError:
+	print("Can't read input file.")
+	exit(2)
+
+for p in range(1,8):
 	start = time.time()
 
 	# convert a rgb image to gray
-	imagelue = imread('test.png')
 	image=imagelue.astype('float')
 	image=rgb2gray(image)
 

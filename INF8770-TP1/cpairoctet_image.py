@@ -78,9 +78,6 @@ input = input("Enter file to process: ")
 
 # Opens the file
 try:
-	#file = open(input, "rb")
-	#image = file.read()
-	# convert a rgb image to gray
 	imagelue = imread(input)
 	image=imagelue.astype('float')
 except IOError:
