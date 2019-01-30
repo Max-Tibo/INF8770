@@ -1,3 +1,7 @@
+# Main source code : 
+# Predictive coding : Gabriel Bilodeau https://github.com/gabilodeau/INF8770/blob/master/Codage%20predictif%20sur%20image.ipynb
+# Huffman enconding : Joshua Ebenezer https://github.com/JoshuaEbenezer/huffman_encoding/blob/master/README.md
+
 import time
 import numpy as np
 from scipy.misc import imread,imresize

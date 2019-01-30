@@ -1,3 +1,5 @@
+# Main source code : Martin Kwork https://synook.net/a-simple-implementation-of-byte-pair-encoding/ 
+
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import time
