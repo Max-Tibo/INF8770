@@ -81,17 +81,17 @@ def predicteur(nAlgo, texttocompress):
 	erreur = np.zeros(len(texttocompress)-1)
 	pred = np.zeros(len(texttocompress)-1)
 	if(nAlgo == 1):
-		print('Test 1')
+		print('Heuristic test for repetitive char sequence')
 		for i in range(1,len(texttocompress)-1):
 			pred[i]=texttocompress[i-1]
 			erreur[i]=pred[i]-texttocompress[i]
 	if(nAlgo == 2):
-		print('Test 2')
+		print('Random test 1')
 		for i in range(1,len(texttocompress)-1):
 			pred[i]=texttocompress[i-1] + texttocompress[i+1]
 			erreur[i]=pred[i]-texttocompress[i]
 	if(nAlgo == 3):
-		print('Test 3')
+		print('Random test 2')
 		for i in range(1,len(texttocompress)-1):
 			pred[i]=(texttocompress[i-1] + texttocompress[i+1])/2
 			erreur[i]=pred[i]-texttocompress[i]
