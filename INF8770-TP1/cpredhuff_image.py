@@ -127,10 +127,10 @@ def predicteur(nAlgo, imagetocompress):
 				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
 	if(nAlgo == 7):
 		print('heuristic - test')
-		matpred = [[0.25,0.25],[0.25,0.25]]
+		matpred = [[0.25,0.25,0.25],[0.25,0.0,0.0]]
 		for i in range(1,len(imagetocompress)-2):
 			for j in range(1,len(imagetocompress[0])-2):
-				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]+imagetocompress[i-1][j+1]*matpred[1][1]
+				imagepred[i][j]=imagetocompress[i-1][j-1]*matpred[0][0]+imagetocompress[i-1][j]*matpred[0][1]+imagetocompress[i][j-1]*matpred[1][0]+imagetocompress[i-1][j+1]*matpred[0][2]
 				erreur[i][j]=imagepred[i][j]-imagetocompress[i][j]
 	return erreur.astype('uint8')
 
