@@ -15,6 +15,7 @@ namespace TP2_INF8770
             Bitmap imageBM = new Bitmap("mario.png");
             Bitmap nouvelleimage = rgb2ycbcr(imageBM);
             ycbcr2rgb(nouvelleimage);
+            decoupage8x8(imageBM);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp)
@@ -85,14 +86,64 @@ namespace TP2_INF8770
             return newBitmap;
         }
 
-        public void decoupage8x8(Bitmap bitmap)
+        public static List<Color[,]> decoupage8x8(Bitmap bitmap)
         {
+            Color[,] tabColor;
+            List<Color[,]> tab8x8 = new List<Color[,]>();
+            for (int i = 0; i < bitmap.Height; i = i + 8)
+            {
+                for (int j = 0; j < bitmap.Width; j = j + 8)
+                {
+                    tabColor = new Color[8, 8];
+                    for (int x = j, positionx = 0; x < (j + 8); x++, positionx++)
+                    {
+                        for (int y = i, positiony = 0; y < (i + 8); y++, positiony++)
+                        {
+                            tabColor[positiony, positionx] = bitmap.GetPixel(x, y);
+                            Console.WriteLine(tabColor[positiony, positionx]);
+                        }
 
+                    }
+                    tab8x8.Add(tabColor);
+
+                }
+            }
+            return tab8x8;
         }
 
-        public void DCT(Bitmap bitmap)
+        public void DCT(List<Color[,]> tab8x8)
         {
+            int n = 8;
+            double w, z;
+            for (int u = 0; u < n; u++)
+            {
+                for (int v = 0; v < n; v++)
+                {
+                    if (u == 1){ w = Math.Sqrt(1.0 / n); }
+                    else{ w = Math.Sqrt(2.0 / n); }
+                    if (v == 1) { z = Math.Sqrt(1.0 / n); }
+                    else { z = Math.Sqrt(2.0 / n); }
+                    double factor = w * z;
 
+                    double sum = 0.0;
+                    for (int x = 1; x <= n; ++x)
+                    {
+                        for (int y = 1; y <= n; ++y)
+                        {
+                            //int value = valeur du pixel a la position x y;
+
+                            double insideCos1 = (Math.PI * (2 * (x - 1) + 1) * (u - 1)) / (2 * n);
+                            double insideCos2 = (Math.PI * (2 * (y - 1) + 1) * (v - 1)) / (2 * n);
+                            //sum += value * Math.Cos(insideCos1) * Math.Cos(insideCos2);
+                        }
+                    }
+
+                    double dct_transform = factor * sum;
+
+                    //créer nouveau bloc 8x8 avec les fréquences obtenu
+                    //oOutput(u - 1, v - 1) = dct_transform;
+                }
+            }
         }
     }
 }
