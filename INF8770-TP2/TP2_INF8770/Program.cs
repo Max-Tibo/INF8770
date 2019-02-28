@@ -13,7 +13,7 @@ namespace TP2_INF8770
     {
         static void Main(string[] args)
         {
-            Bitmap imageBM = new Bitmap("mario.png");
+            Bitmap imageBM = new Bitmap("tiger.png");
             int width = imageBM.Width;
             int height = imageBM.Height;
 
@@ -33,21 +33,34 @@ namespace TP2_INF8770
 
             // Remplissage des listes
             yBlocks = decoupage8x8(yData);
-            //bBlocks = decoupage8x8(bData);
-            //rBlocks = decoupage8x8(rData);
+            bBlocks = decoupage8x8(bData);
+            rBlocks = decoupage8x8(rData);
+            Console.WriteLine(yBlocks.Count);
+            Console.WriteLine(bBlocks.Count);
+            Console.WriteLine(rBlocks.Count);
+
 
             // Merge toutes les listes de blocs 8x8 ensemble en vue de la dct
             List<byte[,]> blocks = new List<byte[,]>();
             blocks.AddRange(yBlocks);
-            //blocks.AddRange(bBlocks);
-            //blocks.AddRange(rBlocks);
+            blocks.AddRange(bBlocks);
+            blocks.AddRange(rBlocks);
 
             // Applique la dct
-            //DCT(blocks);
+            DCT(blocks);
 
             // Lecture en diagonal
-            List<int[,]> listData2compress = new List<int[,]>();
+            List<int> listData2compress = new List<int>();
+
             //listData2compress = zigZagMatrix(blocks);
+
+            // Compression par Huffman et RLE
+            String string2compress_huff = String.Join("", listData2compress);
+            HuffmanTree huffmanTree = new HuffmanTree();
+            huffmanTree.Build(string2compress_huff);
+            BitArray compressedString_huff = huffmanTree.Encode(string2compress_huff);
+            //String string2compress_rle = Encoding.UTF8.GetString(compressedString_huff, 0, compressedString_huff.Length);
+            //String compressedString_rle = Transform.RunLengthEncode(string2compress_rle);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
@@ -160,9 +173,10 @@ namespace TP2_INF8770
             return tab8x8;
         }
 
-        public void DCT(List<byte[,]> tab8x8)
+        public static void DCT(List<byte[,]> tab8x8)
         {
-            int n = 8;
+            Console.WriteLine(tab8x8.Count/3);
+            /*int n = 8;
             double w, z;
             for (int u = 0; u < n; u++)
             {
@@ -192,7 +206,7 @@ namespace TP2_INF8770
                     //créer nouveau bloc 8x8 avec les fréquences obtenu
                     //oOutput(u - 1, v - 1) = dct_transform;
                 }
-            }
+            }*/
         }
 
         // Utility function to read matrix in zig-zag form 
