@@ -22,9 +22,17 @@ namespace TP2_INF8770
             byte[,] bData = new byte[width / 2, height / 2];
             byte[,] rData = new byte[width / 2, height / 2];
 
+            //juste pour test
+            byte[,] redData = new byte[width, height];
+            byte[,] greenData = new byte[width, height];
+            byte[,] blueData = new byte[width, height];
+
             // Applique la conversion et division des résultats de chaques composantes dans leur tableau respectif
             Bitmap nouvelleimage = rgb2ycbcr(imageBM, yData, bData, rData);
-            //ycbcr2rgb(nouvelleimage);
+
+            
+
+            ycbcr2rgb(yData, bData, rData);
 
             // Création des listes qui vont contenir tous les tableaux 8x8 de chaque élément Y Cb Cr
             List<byte[,]> yBlocks = new List<byte[,]>();
@@ -175,6 +183,7 @@ namespace TP2_INF8770
             }
             return tab8x8;
         }
+
 
         public static List<int[,]> DCT(List<byte[,]> tab8x8)
         {
