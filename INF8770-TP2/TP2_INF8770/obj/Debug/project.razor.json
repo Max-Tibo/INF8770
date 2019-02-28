@@ -1,0 +1,14 @@
+{
+  "ProjectFilePath": "c:\\Users\\maxim\\OneDrive\\Bureau\\INF8770\\INF8770-TP2\\TP2_INF8770\\TP2_INF8770.csproj",
+  "TargetFramework": "v4.6.1",
+  "TagHelpers": [],
+  "Configuration": {
+    "ConfigurationName": "UnsupportedRazor",
+    "LanguageVersion": "1.0",
+    "Extensions": [
+      {
+        "ExtensionName": "UnsupportedRazorExtension"
+      }
+    ]
+  }
+}
