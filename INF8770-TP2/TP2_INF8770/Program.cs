@@ -48,6 +48,13 @@ namespace TP2_INF8770
             // Lecture en diagonal
             List<int[,]> listData2compress = new List<int[,]>();
             listData2compress = zigZagMatrix(blocks);
+
+            // Compression par Huffman et RLE
+            String string2compress_huff = String.Join("", listData2compress);
+            HuffmanTree.Build(string2compress_huff);
+            ByteArray compressedString_huff = HuffmanTree.Encode(string2compress_huff);
+            String string2compress_rle = Encoding.UTF8.GetString(compressedString_huff, 0, compressedString_huff.Length);
+            String compressedString_rle = Transform.RunLengthEncode(string2compress_rle);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
