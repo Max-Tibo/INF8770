@@ -35,10 +35,6 @@ namespace TP2_INF8770
             yBlocks = decoupage8x8(yData);
             bBlocks = decoupage8x8(bData);
             rBlocks = decoupage8x8(rData);
-            Console.WriteLine(yBlocks.Count);
-            Console.WriteLine(bBlocks.Count);
-            Console.WriteLine(rBlocks.Count);
-
 
             // Merge toutes les listes de blocs 8x8 ensemble en vue de la dct
             List<byte[,]> blocks = new List<byte[,]>();
@@ -47,12 +43,15 @@ namespace TP2_INF8770
             blocks.AddRange(rBlocks);
 
             // Applique la dct
-            DCT(blocks);
+            List<int[,]> DCTBlocks = new List<int[,]>();
+            DCTBlocks = DCT(blocks);
+
+            Quantification(DCTBlocks);
 
             // Lecture en diagonal
             List<int> listData2compress = new List<int>();
 
-            //listData2compress = zigZagMatrix(blocks);
+            //listData2compress = zigZagMatrix(DCTBlocks,nouvelleimage.Width,nouvelleimage.Height);
 
             // Compression par Huffman et RLE
             String string2compress_huff = String.Join("", listData2compress);
@@ -177,40 +176,90 @@ namespace TP2_INF8770
             return tab8x8;
         }
 
-        public static void DCT(List<byte[,]> tab8x8)
+        public static List<int[,]> DCT(List<byte[,]> tab8x8)
         {
-            Console.WriteLine(tab8x8.Count/3);
-            /*int n = 8;
-            double w, z;
-            for (int u = 0; u < n; u++)
-            {
-                for (int v = 0; v < n; v++)
+            List<int[,]> ListTabFrequence = new List<int[,]>();
+            for (int i = 0; i < tab8x8.Count; i++) {
+                int[,] tabFrequence = new int[8, 8];
+                int n = 8;
+                double w, z;
+                for (int u = 0; u < n; u++)
                 {
-                    if (u == 1) { w = Math.Sqrt(1.0 / n); }
-                    else { w = Math.Sqrt(2.0 / n); }
-                    if (v == 1) { z = Math.Sqrt(1.0 / n); }
-                    else { z = Math.Sqrt(2.0 / n); }
-                    double factor = w * z;
-
-                    double sum = 0.0;
-                    for (int x = 1; x <= n; ++x)
+                    for (int v = 0; v < n; v++)
                     {
-                        for (int y = 1; y <= n; ++y)
+                        if (u == 1) { w = Math.Sqrt(1.0 / n); }
+                        else { w = Math.Sqrt(2.0 / n); }
+                        if (v == 1) { z = Math.Sqrt(1.0 / n); }
+                        else { z = Math.Sqrt(2.0 / n); }
+                        double factor = w * z;
+
+                        double sum = 0.0;
+                        for (int x = 0; x < n; x++)
                         {
-                            //int value = valeur du pixel a la position x y;
+                            for (int y = 0; y < n; y++)
+                            {
+                                double value = tab8x8[i][x,y];
 
-                            double insideCos1 = (Math.PI * (2 * (x - 1) + 1) * (u - 1)) / (2 * n);
-                            double insideCos2 = (Math.PI * (2 * (y - 1) + 1) * (v - 1)) / (2 * n);
-                            //sum += value * Math.Cos(insideCos1) * Math.Cos(insideCos2);
+                                double insideCos1 = (Math.PI * (2 * (x - 1) + 1) * (u - 1)) / (2 * n);
+                                double insideCos2 = (Math.PI * (2 * (y - 1) + 1) * (v - 1)) / (2 * n);
+                                sum += value * Math.Cos(insideCos1) * Math.Cos(insideCos2);
+                            }
                         }
+
+                        double dct_transform = factor * sum;
+
+                        tabFrequence[u,v] = (int)dct_transform;
                     }
-
-                    double dct_transform = factor * sum;
-
-                    //créer nouveau bloc 8x8 avec les fréquences obtenu
-                    //oOutput(u - 1, v - 1) = dct_transform;
                 }
-            }*/
+                ListTabFrequence.Add(tabFrequence);
+            }
+            return ListTabFrequence;
+        }
+
+        public static void Quantification(List<int[,]> listFrequence8x8)
+        {
+            int[,] matriceQuantification = new int[,] { { 16, 11, 10, 16, 24, 40, 51, 61 },
+                                                        { 12, 12, 14, 19, 26, 58, 60, 55 }, 
+                                                        { 14, 13, 16, 24, 40, 57, 69, 56 }, 
+                                                        { 14, 17, 22, 29, 51, 87, 80, 62 },
+                                                        { 18, 22, 37, 56, 68, 109, 103, 77 },
+                                                        { 24, 35, 55, 64, 81, 104, 113, 92 },
+                                                        { 49, 64, 78, 87, 103, 121, 120, 101 },
+                                                        { 72, 92, 95, 98, 112, 100, 103, 99 },};
+
+            for (int i = 0; i < listFrequence8x8.Count; i++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    for (int y = 0; y < 8; y++)
+                    {
+                        listFrequence8x8[i][x, y] = (listFrequence8x8[i][x, y] * (matriceQuantification[x, y] / 2)) / matriceQuantification[x, y];
+                    }
+                }
+            }
+        }
+
+        public static void QuantificationInverse(List<int[,]> listFrequence8x8)
+        {
+            int[,] matriceQuantification = new int[,] { { 16, 11, 10, 16, 24, 40, 51, 61 },
+                                                        { 12, 12, 14, 19, 26, 58, 60, 55 },
+                                                        { 14, 13, 16, 24, 40, 57, 69, 56 },
+                                                        { 14, 17, 22, 29, 51, 87, 80, 62 },
+                                                        { 18, 22, 37, 56, 68, 109, 103, 77 },
+                                                        { 24, 35, 55, 64, 81, 104, 113, 92 },
+                                                        { 49, 64, 78, 87, 103, 121, 120, 101 },
+                                                        { 72, 92, 95, 98, 112, 100, 103, 99 },};
+
+            for (int i = 0; i < listFrequence8x8.Count; i++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    for (int y = 0; y < 8; y++)
+                    {
+                        listFrequence8x8[i][x, y] = listFrequence8x8[i][x, y] * matriceQuantification[x, y];
+                    }
+                }
+            }
         }
 
         // Utility function to read matrix in zig-zag form 
