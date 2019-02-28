@@ -54,6 +54,7 @@ namespace TP2_INF8770
         {
             int width = bmp.Width;
             int height = bmp.Height;
+            Bitmap newBitmap = new Bitmap(bmp.Width, bmp.Height);
 
             //Convert to YCbCr
             for (int y = 0; y < height; y++)
@@ -69,6 +70,7 @@ namespace TP2_INF8770
                     double Cr = 128 + 0.713 * (red - Y);
 
                     yData[x, y] = (byte)Y;
+                    Color nouvelleCouleur = new Color();
 
                     if (y % 2 == 0 && x % 2 == 0)
                     {
@@ -77,9 +79,14 @@ namespace TP2_INF8770
 
                         bData[subx, suby] = (byte)Cb;
                         rData[subx, suby] = (byte)Cr;
+                        nouvelleCouleur = Color.FromArgb(yData[x, y], bData[subx, suby], rData[subx, suby]);
+                    }
+                    else
+                    {
+                        nouvelleCouleur = Color.FromArgb(yData[x, y], 0, 0);
                     }
 
-                    Color nouvelleCouleur = Color.FromArgb(yData[x, y], bData[x, y], rData[x, y]);
+                    
                     newBitmap.SetPixel(x, y, nouvelleCouleur);
                 }
             }
@@ -135,12 +142,9 @@ namespace TP2_INF8770
                         for (int y = i, positiony = 0; y < (i + 8); y++, positiony++)
                         {
                             block[positiony, positionx] = data[x, y];
-                            Console.WriteLine(block[positiony, positionx]);
                         }
-
                     }
                     tab8x8.Add(block);
-
                 }
             }
             return tab8x8;
