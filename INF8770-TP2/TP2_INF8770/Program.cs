@@ -59,8 +59,12 @@ namespace TP2_INF8770
             HuffmanTree huffmanTree = new HuffmanTree();
             huffmanTree.Build(string2compress_huff);
             BitArray compressedString_huff = huffmanTree.Encode(string2compress_huff);
-            //String string2compress_rle = Encoding.UTF8.GetString(compressedString_huff, 0, compressedString_huff.Length);
-            //String compressedString_rle = Transform.RunLengthEncode(string2compress_rle);
+            StringBuilder string2compress_rle = new StringBuilder();
+            foreach(var b in compressedString_huff){
+                string2compress_rle.Append((bool)b ? "1" : "0");
+            }
+            String string2compressRLE = string2compress_rle.ToString();
+            String compressedString_rle = Transform.RunLengthEncode(string2compressRLE);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
