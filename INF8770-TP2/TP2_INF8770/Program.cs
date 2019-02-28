@@ -24,7 +24,7 @@ namespace TP2_INF8770
 
             // Applique la conversion et division des résultats de chaques composantes dans leur tableau respectif
             Bitmap nouvelleimage = rgb2ycbcr(imageBM, yData, bData, rData);
-            ycbcr2rgb(nouvelleimage);
+            //ycbcr2rgb(nouvelleimage);
 
             // Création des listes qui vont contenir tous les tableaux 8x8 de chaque élément Y Cb Cr
             List<byte[,]> yBlocks = new List<byte[,]>();
@@ -33,21 +33,21 @@ namespace TP2_INF8770
 
             // Remplissage des listes
             yBlocks = decoupage8x8(yData);
-            bBlocks = decoupage8x8(bData);
-            rBlocks = decoupage8x8(rData);
+            //bBlocks = decoupage8x8(bData);
+            //rBlocks = decoupage8x8(rData);
 
             // Merge toutes les listes de blocs 8x8 ensemble en vue de la dct
             List<byte[,]> blocks = new List<byte[,]>();
             blocks.AddRange(yBlocks);
-            blocks.AddRange(bBlocks);
-            blocks.AddRange(rBlocks);
+            //blocks.AddRange(bBlocks);
+            //blocks.AddRange(rBlocks);
 
             // Applique la dct
-            DCT(blocks);
+            //DCT(blocks);
 
             // Lecture en diagonal
             List<int[,]> listData2compress = new List<int[,]>();
-            listData2compress = zigZagMatrix(blocks);
+            //listData2compress = zigZagMatrix(blocks);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
@@ -56,8 +56,8 @@ namespace TP2_INF8770
             int height = bmp.Height;
             Bitmap ycbcrBitmap = new Bitmap(bmp.Width, bmp.Height);
 
-            byte tempCb;
-            byte tempCr;
+            byte tempCb = 0;
+            byte tempCr = 0;
             //Convert to YCbCr
             for (int y = 0; y < height; y++)
             {
@@ -98,16 +98,16 @@ namespace TP2_INF8770
 
         public static Bitmap ycbcr2rgb(byte[,] yData, byte[,] bData, byte[,] rData)
         {
-            int width = yData.Width;
-            int height = yData.Height;
-            Bitmap rgbBitmap = new Bitmap(bmp.Width, bmp.Height);
-            byte[,] rData = new byte[width, height];
-            byte[,] gData = new byte[width, height];
-            byte[,] bData = new byte[width, height];
+            int width = yData.GetLength(0);
+            int height = yData.GetLength(1);
+            Bitmap rgbBitmap = new Bitmap(width, height);
+            byte[,] redData = new byte[width, height];
+            byte[,] greenData = new byte[width, height];
+            byte[,] blueData = new byte[width, height];
 
-            float Y;
-            float Cb;
-            float Cr;
+            float Y = 0;
+            float Cb = 0;
+            float Cr = 0;
             //Convert to RGB
             for (int y = 0; y < height; y++)
             {
@@ -126,11 +126,11 @@ namespace TP2_INF8770
                     double green = Y - 0.714 * (Cr - 128) - 0.344 * (Cb - 128);
                     double blue = Y + 1.773 * (Cb - 128);
 
-                    rData[x, y] = (byte)red;
-                    gData[x, y] = (byte)green;
-                    bData[x, y] = (byte)blue;
+                    redData[x, y] = (byte)red;
+                    greenData[x, y] = (byte)green;
+                    blueData[x, y] = (byte)blue;
 
-                    Color nouvelleCouleur = Color.FromArgb(rData[x, y], gData[x, y], bData[x, y]);
+                    Color nouvelleCouleur = Color.FromArgb(redData[x, y], greenData[x, y], blueData[x, y]);
                     rgbBitmap.SetPixel(x, y, nouvelleCouleur);
                 }
             }
@@ -197,9 +197,9 @@ namespace TP2_INF8770
 
         // Utility function to read matrix in zig-zag form 
         // https://www.geeksforgeeks.org/print-matrix-zag-zag-fashion/
-        static List<int[]> zigZagMatrix(int[,] arr, int n, int m)
+        static List<int> zigZagMatrix(int[,] arr, int n, int m)
         {
-            List<int[]> listData = new List<int[]>();
+            List<int> listData = new List<int>();
             int row = 0, col = 0;
 
             // Boolean variable that will 
@@ -329,6 +329,7 @@ namespace TP2_INF8770
                     row_inc = false;
                 }
             }
+            return listData;
         }
     }
 
