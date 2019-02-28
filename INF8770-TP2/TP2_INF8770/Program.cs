@@ -54,8 +54,10 @@ namespace TP2_INF8770
         {
             int width = bmp.Width;
             int height = bmp.Height;
-            Bitmap newBitmap = new Bitmap(bmp.Width, bmp.Height);
+            Bitmap ycbcrBitmap = new Bitmap(bmp.Width, bmp.Height);
 
+            byte tempCb;
+            byte tempCr;
             //Convert to YCbCr
             for (int y = 0; y < height; y++)
             {
@@ -78,40 +80,48 @@ namespace TP2_INF8770
                         int subx = x / 2;
 
                         bData[subx, suby] = (byte)Cb;
+                        tempCb = (byte)Cb;
                         rData[subx, suby] = (byte)Cr;
+                        tempCr = (byte)Cr;
                         nouvelleCouleur = Color.FromArgb(yData[x, y], bData[subx, suby], rData[subx, suby]);
                     }
                     else
                     {
-                        nouvelleCouleur = Color.FromArgb(yData[x, y], 0, 0);
+                        nouvelleCouleur = Color.FromArgb(yData[x, y], tempCb, tempCr);
                     }
-
-                    
-                    newBitmap.SetPixel(x, y, nouvelleCouleur);
+                    ycbcrBitmap.SetPixel(x, y, nouvelleCouleur);
                 }
             }
-            newBitmap.Save("mybmp.bmp", System.Drawing.Imaging.ImageFormat.Bmp);
-            return newBitmap;
+            ycbcrBitmap.Save("mybmp.bmp", System.Drawing.Imaging.ImageFormat.Bmp);
+            return ycbcrBitmap;
         }
 
-        public static Bitmap ycbcr2rgb(Bitmap bmp)
+        public static Bitmap ycbcr2rgb(byte[,] yData, byte[,] bData, byte[,] rData)
         {
-            int width = bmp.Width;
-            int height = bmp.Height;
-            Bitmap newBitmap = new Bitmap(bmp.Width, bmp.Height);
+            int width = yData.Width;
+            int height = yData.Height;
+            Bitmap rgbBitmap = new Bitmap(bmp.Width, bmp.Height);
             byte[,] rData = new byte[width, height];
             byte[,] gData = new byte[width, height];
             byte[,] bData = new byte[width, height];
 
+            float Y;
+            float Cb;
+            float Cr;
             //Convert to RGB
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    float Y = bmp.GetPixel(x, y).R;
-                    float Cb = bmp.GetPixel(x, y).G;
-                    float Cr = bmp.GetPixel(x, y).B;
+                    Y = (float)yData[x, y];
 
+                    if (y % 2 == 0 && x % 2 == 0)
+                    {
+                        int suby = y / 2;
+                        int subx = x / 2;
+                        Cb = (float)bData[subx, suby];
+                        Cr = (float)rData[subx, suby];
+                    }
                     double red = Y + 1.403 * (Cr - 128);
                     double green = Y - 0.714 * (Cr - 128) - 0.344 * (Cb - 128);
                     double blue = Y + 1.773 * (Cb - 128);
@@ -121,11 +131,11 @@ namespace TP2_INF8770
                     bData[x, y] = (byte)blue;
 
                     Color nouvelleCouleur = Color.FromArgb(rData[x, y], gData[x, y], bData[x, y]);
-                    newBitmap.SetPixel(x, y, nouvelleCouleur);
+                    rgbBitmap.SetPixel(x, y, nouvelleCouleur);
                 }
             }
-            newBitmap.Save("test.bmp", System.Drawing.Imaging.ImageFormat.Bmp);
-            return newBitmap;
+            rgbBitmap.Save("test.bmp", System.Drawing.Imaging.ImageFormat.Bmp);
+            return rgbBitmap;
         }
 
         public static List<byte[,]> decoupage8x8(byte[,] data)
