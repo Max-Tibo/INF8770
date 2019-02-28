@@ -53,7 +53,11 @@ namespace TP2_INF8770
             String string2compress_huff = String.Join("", listData2compress);
             HuffmanTree.Build(string2compress_huff);
             ByteArray compressedString_huff = HuffmanTree.Encode(string2compress_huff);
-            String string2compress_rle = Encoding.UTF8.GetString(compressedString_huff, 0, compressedString_huff.Length);
+            StringBuilder string2compress_rle = new StringBuilder();
+            foreach(var b in compressedString_huff){
+                string2compress_rle.Append((bool)b ? "1" : "0");
+            }
+            string2compress_rle.ToString();
             String compressedString_rle = Transform.RunLengthEncode(string2compress_rle);
         }
 
