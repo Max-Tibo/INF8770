@@ -18,16 +18,16 @@ namespace TP2_INF8770
             int height = imageBM.Height;
 
             // Création des tableaux 2D qui vont contenir les informations de Y Cb Cr
-            byte[,] yData = new byte[width, height]; 
-            byte[,] bData = new byte[width/2, height/2];
-            byte[,] rData = new byte[width/2, height/2];
+            byte[,] yData = new byte[width, height];
+            byte[,] bData = new byte[width / 2, height / 2];
+            byte[,] rData = new byte[width / 2, height / 2];
 
             // Applique la conversion et division des résultats de chaques composantes dans leur tableau respectif
             Bitmap nouvelleimage = rgb2ycbcr(imageBM, yData, bData, rData);
             ycbcr2rgb(nouvelleimage);
 
             // Création des listes qui vont contenir tous les tableaux 8x8 de chaque élément Y Cb Cr
-            List<byte[,]> yBlocks = new List<byte[,]>(); 
+            List<byte[,]> yBlocks = new List<byte[,]>();
             List<byte[,]> bBlocks = new List<byte[,]>();
             List<byte[,]> rBlocks = new List<byte[,]>();
 
@@ -44,12 +44,16 @@ namespace TP2_INF8770
 
             // Applique la dct
             DCT(blocks);
+
+            // Lecture en diagonal
+            List<int[,]> listData2compress = new List<int[,]>();
+            listData2compress = zigZagMatrix(blocks);
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
         {
             int width = bmp.Width;
-            int height = bmp.Height;                   
+            int height = bmp.Height;
 
             //Convert to YCbCr
             for (int y = 0; y < height; y++)
@@ -57,7 +61,7 @@ namespace TP2_INF8770
                 for (int x = 0; x < width; x++)
                 {
                     float blue = bmp.GetPixel(x, y).B;
-                    float green = bmp.GetPixel(x, y).G; 
+                    float green = bmp.GetPixel(x, y).G;
                     float red = bmp.GetPixel(x, y).R;
 
                     double Y = (0.299 * red) + (0.587 * green) + (0.114 * blue);
@@ -66,10 +70,10 @@ namespace TP2_INF8770
 
                     yData[x, y] = (byte)Y;
 
-                    if(y % 2 == 0 && x % 2 == 0) 
+                    if (y % 2 == 0 && x % 2 == 0)
                     {
-                        int suby = y/2;
-                        int subx = x/2; 
+                        int suby = y / 2;
+                        int subx = x / 2;
 
                         bData[subx, suby] = (byte)Cb;
                         rData[subx, suby] = (byte)Cr;
@@ -150,8 +154,8 @@ namespace TP2_INF8770
             {
                 for (int v = 0; v < n; v++)
                 {
-                    if (u == 1){ w = Math.Sqrt(1.0 / n); }
-                    else{ w = Math.Sqrt(2.0 / n); }
+                    if (u == 1) { w = Math.Sqrt(1.0 / n); }
+                    else { w = Math.Sqrt(2.0 / n); }
                     if (v == 1) { z = Math.Sqrt(1.0 / n); }
                     else { z = Math.Sqrt(2.0 / n); }
                     double factor = w * z;
@@ -176,6 +180,142 @@ namespace TP2_INF8770
                 }
             }
         }
+
+        // Utility function to read matrix in zig-zag form 
+        // https://www.geeksforgeeks.org/print-matrix-zag-zag-fashion/
+        static List<int[]> zigZagMatrix(int[,] arr, int n, int m)
+        {
+            List<int[]> listData = new List<int[]>();
+            int row = 0, col = 0;
+
+            // Boolean variable that will 
+            // true if we need to increment 
+            // 'row' valueotherwise false- 
+            // if increment 'col' value 
+            bool row_inc = false;
+
+            // Print matrix of lower half 
+            // zig-zag pattern 
+            int mn = Math.Min(m, n);
+            for (int len = 1; len <= mn; ++len)
+            {
+                for (int i = 0; i < len; ++i)
+                {
+
+                    listData.Add(arr[row, col]);
+
+                    if (i + 1 == len)
+                        break;
+
+                    // If row_increment value is true 
+                    // increment row and decrement col 
+                    // else decrement row and increment 
+                    // col 
+                    if (row_inc)
+                    {
+                        ++row;
+                        --col;
+                    }
+                    else
+                    {
+                        --row;
+                        ++col;
+                    }
+                }
+
+                if (len == mn)
+                    break;
+
+                // Update row or col valaue 
+                // according to the last 
+                // increment 
+                if (row_inc)
+                {
+                    ++row;
+                    row_inc = false;
+                }
+                else
+                {
+                    ++col;
+                    row_inc = true;
+                }
+            }
+
+            // Update the indexes of row 
+            // and col variable 
+            if (row == 0)
+            {
+                if (col == m - 1)
+                    ++row;
+                else
+                    ++col;
+                row_inc = true;
+            }
+            else
+            {
+                if (row == n - 1)
+                    ++col;
+                else
+                    ++row;
+                row_inc = false;
+            }
+
+            // Print the next half 
+            // zig-zag pattern 
+            int MAX = Math.Max(m, n) - 1;
+            for (int len, diag = MAX; diag > 0; --diag)
+            {
+
+                if (diag > mn)
+                    len = mn;
+                else
+                    len = diag;
+
+                for (int i = 0; i < len; ++i)
+                {
+                    listData.Add(arr[row, col]);
+
+                    if (i + 1 == len)
+                        break;
+
+                    // Update row or col vlaue 
+                    // according to the last 
+                    // increment 
+                    if (row_inc)
+                    {
+                        ++row;
+                        --col;
+                    }
+                    else
+                    {
+                        ++col;
+                        --row;
+                    }
+                }
+
+                // Update the indexes of 
+                // row and col variable 
+                if (row == 0 || col == m - 1)
+                {
+                    if (col == m - 1)
+                        ++row;
+                    else
+                        ++col;
+
+                    row_inc = true;
+                }
+
+                else if (col == 0 || row == n - 1)
+                {
+                    if (row == n - 1)
+                        ++col;
+                    else
+                        ++row;
+
+                    row_inc = false;
+                }
+            }
+        }
     }
 
     // Ajout des classes et méthodes nécessaire pour la compression de huffman:
@@ -186,7 +326,7 @@ namespace TP2_INF8770
         public int Frequency { get; set; }
         public Node Right { get; set; }
         public Node Left { get; set; }
- 
+
         public List<bool> Traverse(char symbol, List<bool> data)
         {
             // Leaf
@@ -205,16 +345,16 @@ namespace TP2_INF8770
             {
                 List<bool> left = null;
                 List<bool> right = null;
- 
+
                 if (Left != null)
                 {
                     List<bool> leftPath = new List<bool>();
                     leftPath.AddRange(data);
                     leftPath.Add(false);
- 
+
                     left = Left.Traverse(symbol, leftPath);
                 }
- 
+
                 if (Right != null)
                 {
                     List<bool> rightPath = new List<bool>();
@@ -222,7 +362,7 @@ namespace TP2_INF8770
                     rightPath.Add(true);
                     right = Right.Traverse(symbol, rightPath);
                 }
- 
+
                 if (left != null)
                 {
                     return left;
@@ -240,7 +380,7 @@ namespace TP2_INF8770
         private List<Node> nodes = new List<Node>();
         public Node Root { get; set; }
         public Dictionary<char, int> Frequencies = new Dictionary<char, int>();
- 
+
         public void Build(string source)
         {
             for (int i = 0; i < source.Length; i++)
@@ -249,24 +389,24 @@ namespace TP2_INF8770
                 {
                     Frequencies.Add(source[i], 0);
                 }
- 
+
                 Frequencies[source[i]]++;
             }
- 
+
             foreach (KeyValuePair<char, int> symbol in Frequencies)
             {
                 nodes.Add(new Node() { Symbol = symbol.Key, Frequency = symbol.Value });
             }
- 
+
             while (nodes.Count > 1)
             {
                 List<Node> orderedNodes = nodes.OrderBy(node => node.Frequency).ToList<Node>();
- 
+
                 if (orderedNodes.Count >= 2)
                 {
                     // Take first two items
                     List<Node> taken = orderedNodes.Take(2).ToList<Node>();
- 
+
                     // Create a parent node by combining the frequencies
                     Node parent = new Node()
                     {
@@ -275,38 +415,38 @@ namespace TP2_INF8770
                         Left = taken[0],
                         Right = taken[1]
                     };
- 
+
                     nodes.Remove(taken[0]);
                     nodes.Remove(taken[1]);
                     nodes.Add(parent);
                 }
- 
+
                 this.Root = nodes.FirstOrDefault();
- 
+
             }
- 
+
         }
- 
+
         public BitArray Encode(string source)
         {
             List<bool> encodedSource = new List<bool>();
- 
+
             for (int i = 0; i < source.Length; i++)
             {
                 List<bool> encodedSymbol = this.Root.Traverse(source[i], new List<bool>());
                 encodedSource.AddRange(encodedSymbol);
             }
- 
+
             BitArray bits = new BitArray(encodedSource.ToArray());
- 
+
             return bits;
         }
- 
+
         public string Decode(BitArray bits)
         {
             Node current = this.Root;
             string decoded = "";
- 
+
             foreach (bool bit in bits)
             {
                 if (bit)
@@ -323,27 +463,27 @@ namespace TP2_INF8770
                         current = current.Left;
                     }
                 }
- 
+
                 if (IsLeaf(current))
                 {
                     decoded += current.Symbol;
                     current = this.Root;
                 }
             }
- 
+
             return decoded;
         }
- 
+
         public bool IsLeaf(Node node)
         {
             return (node.Left == null && node.Right == null);
         }
- 
+
     }
 
     // Ajout des classes et méthodes nécessaire pour la compression RLE:
     // https://gist.github.com/lsauer/3744846 && http://en.wikipedia.org/wiki/Run-length_encoding
-    public class Transform 
+    public class Transform
     {
         public const char EOF = '\u007F';
         public const char ESCAPE = '\\';
@@ -354,18 +494,19 @@ namespace TP2_INF8770
             {
                 string srle = string.Empty;
                 int ccnt = 1; //char counter
-                for (int i = 0; i < s.Length-1; i++ )
+                for (int i = 0; i < s.Length - 1; i++)
                 {
-                    if (s[i] != s[i + 1] || i == s.Length-2 ) //..a break in character repetition or the end of the string
+                    if (s[i] != s[i + 1] || i == s.Length - 2) //..a break in character repetition or the end of the string
                     {
                         if (s[i] == s[i + 1] && i == s.Length - 2) //end of string condition
                             ccnt++;
-                        srle += ccnt + ("1234567890".Contains(s[i]) ? ""+ESCAPE : "") + s[i]; //escape digits
+                        srle += ccnt + ("1234567890".Contains(s[i]) ? "" + ESCAPE : "") + s[i]; //escape digits
                         if (s[i] != s[i + 1] && i == s.Length - 2) //end of string condition
-                            srle += ("1234567890".Contains(s[i + 1]) ? "1" + ESCAPE : "") + s[i + 1]; 
+                            srle += ("1234567890".Contains(s[i + 1]) ? "1" + ESCAPE : "") + s[i + 1];
                         ccnt = 1; //reset char repetition counter
                     }
-                    else {
+                    else
+                    {
                         ccnt++;
                     }
 
@@ -380,16 +521,20 @@ namespace TP2_INF8770
         }
         public static string RunLengthDecode(string s)
         {
-            try {
-                string  dsrle = string.Empty
+            try
+            {
+                string dsrle = string.Empty
                         , ccnt = string.Empty; //char counter
-                for (int i = 0; i < s.Length; i++) {
-                    if ( "1234567890".Contains(s[i]) ) //extract repetition counter
+                for (int i = 0; i < s.Length; i++)
+                {
+                    if ("1234567890".Contains(s[i])) //extract repetition counter
                     {
                         ccnt += s[i];
                     }
-                    else {
-                        if (s[i] == ESCAPE) {
+                    else
+                    {
+                        if (s[i] == ESCAPE)
+                        {
                             i++;
                         }
                         dsrle += new String(s[i], int.Parse(ccnt));
@@ -399,7 +544,8 @@ namespace TP2_INF8770
                 }
                 return dsrle;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Console.WriteLine("Exception in RLD:" + e.Message);
                 return null;
             }
