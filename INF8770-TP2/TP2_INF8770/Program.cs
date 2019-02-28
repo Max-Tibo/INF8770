@@ -18,14 +18,13 @@ namespace TP2_INF8770
             decoupage8x8(imageBM);
         }
 
-        public static Bitmap rgb2ycbcr(Bitmap bmp)
+        public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
         {
             int width = bmp.Width;
             int height = bmp.Height;
-            Bitmap newBitmap = new Bitmap(bmp.Width, bmp.Height);
-            byte[,] yData = new byte[width, height];                   
-            byte[,] bData = new byte[width, height];                   
-            byte[,] rData = new byte[width, height];                   
+            yData = new byte[width, height];                   
+            bData = new byte[width/2, height/2];                   
+            rData = new byte[width/2, height/2];                   
 
             //Convert to YCbCr
             for (int y = 0; y < height; y++)
@@ -41,8 +40,15 @@ namespace TP2_INF8770
                     double Cr = 128 + 0.713 * (red - Y);
 
                     yData[x, y] = (byte)Y;
-                    bData[x, y] = (byte)Cb;
-                    rData[x, y] = (byte)Cr;
+
+                    if(y % 2 == 0 && x % 2 == 0) 
+                    {
+                        int suby = y/2;
+                        int subx = x/2; 
+
+                        bData[subx, suby] = (byte)Cb;
+                        rData[subx, suby] = (byte)Cr;
+                    }
 
                     Color nouvelleCouleur = Color.FromArgb(yData[x, y], bData[x, y], rData[x, y]);
                     newBitmap.SetPixel(x, y, nouvelleCouleur);
@@ -86,25 +92,25 @@ namespace TP2_INF8770
             return newBitmap;
         }
 
-        public static List<Color[,]> decoupage8x8(Bitmap bitmap)
+        public static List<byte[,]> decoupage8x8(byte[,] data)
         {
-            Color[,] tabColor;
-            List<Color[,]> tab8x8 = new List<Color[,]>();
-            for (int i = 0; i < bitmap.Height; i = i + 8)
+            byte[,] block;
+            List<byte[,]> tab8x8 = new List<byte[,]>();
+            for (int i = 0; i < data.GetLength(1); i = i + 8)
             {
-                for (int j = 0; j < bitmap.Width; j = j + 8)
+                for (int j = 0; j < data.GetLength(0); j = j + 8)
                 {
-                    tabColor = new Color[8, 8];
+                    block = new byte[8, 8];
                     for (int x = j, positionx = 0; x < (j + 8); x++, positionx++)
                     {
                         for (int y = i, positiony = 0; y < (i + 8); y++, positiony++)
                         {
-                            tabColor[positiony, positionx] = bitmap.GetPixel(x, y);
-                            Console.WriteLine(tabColor[positiony, positionx]);
+                            block[positiony, positionx] = data[x, y];
+                            Console.WriteLine(block[positiony, positionx]);
                         }
 
                     }
-                    tab8x8.Add(tabColor);
+                    tab8x8.Add(block);
 
                 }
             }
