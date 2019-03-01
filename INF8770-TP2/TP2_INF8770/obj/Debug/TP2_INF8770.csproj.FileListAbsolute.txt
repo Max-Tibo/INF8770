@@ -12,3 +12,10 @@ D:\école\session hiver 2019\INF8770 multimédia\INF8770\INF8770-TP2\TP2_INF8770
 D:\école\session hiver 2019\INF8770 multimédia\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.csproj.CoreCompileInputs.cache
 D:\école\session hiver 2019\INF8770 multimédia\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.exe
 D:\école\session hiver 2019\INF8770 multimédia\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.pdb
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.csprojAssemblyReference.cache
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.csproj.CoreCompileInputs.cache
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.exe
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\obj\Debug\TP2_INF8770.pdb
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\bin\Debug\TP2_INF8770.exe.config
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\bin\Debug\TP2_INF8770.exe
+C:\Users\maxim\Desktop\INF8770\INF8770-TP2\TP2_INF8770\bin\Debug\TP2_INF8770.pdb

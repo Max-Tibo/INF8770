@@ -13,14 +13,15 @@ namespace TP2_INF8770
     {
         static void Main(string[] args)
         {
-            Bitmap imageBM = new Bitmap("tiger.png");
+            Bitmap imageBM = new Bitmap("rose.png");
             int width = imageBM.Width;
             int height = imageBM.Height;
+            int initialWeigth = width * height * 8 * 3;
 
             // Création des tableaux 2D qui vont contenir les informations de Y Cb Cr
             byte[,] yData = new byte[width, height];
-            byte[,] bData = new byte[width / 2, height / 2];
-            byte[,] rData = new byte[width / 2, height / 2];
+            byte[,] bData = new byte[width, height];
+            byte[,] rData = new byte[width, height];
 
             //juste pour test
             byte[,] redData = new byte[width, height];
@@ -29,8 +30,6 @@ namespace TP2_INF8770
 
             // Applique la conversion et division des résultats de chaques composantes dans leur tableau respectif
             Bitmap nouvelleimage = rgb2ycbcr(imageBM, yData, bData, rData);
-
-            
 
             ycbcr2rgb(yData, bData, rData);
 
@@ -61,7 +60,7 @@ namespace TP2_INF8770
             listData2compress = zigZagMatrix(DCTBlocks, 8, 8);
 
             // Compression par Huffman et RLE
-            String string2compress_huff = String.Join("", listData2compress);
+            String string2compress_huff = String.Join(" ", listData2compress);
             HuffmanTree huffmanTree = new HuffmanTree();
             huffmanTree.Build(string2compress_huff);
             BitArray compressedString_huff = huffmanTree.Encode(string2compress_huff);
@@ -73,11 +72,55 @@ namespace TP2_INF8770
             String compressedString_rle = Transform.RunLengthEncode(string2compressRLE);
 
             // Calcul taux de compression
+            int[] compressedString2calculate = compressedString_rle.Split('/').Select(n => Convert.ToInt32(n)).ToArray();
+            String bitString = "";
+            for(int i = 0; i < compressedString2calculate.Length; i++)
+            {
+                var binary = Convert.ToString(compressedString2calculate[i], 2);
+                bitString += binary;
+            }
+            float compressionRatio = (float)1 - ((float)bitString.Length / (float)initialWeigth);
+            Console.WriteLine(compressionRatio);
 
             // Decodage
-            decompressedString_rle = Transform.RunLengthDecode(compressedString_rle);
-            var res = new BitArray(decompressedString_rle.Select(c => c == '1').ToArray());
-            decompressedString_huff = huffmanTree.Decode(res);
+            String decompressedString_rle = Transform.RunLengthDecode(compressedString_rle);
+            var string2decompress = new BitArray(decompressedString_rle.Select(c => c == '1').ToArray());
+            String decompressedString_huff = huffmanTree.Decode(string2decompress);
+            int[] icolorValues = decompressedString_huff.Split(' ').Select(n => Convert.ToInt32(n)).ToArray();
+            List<int> lcolorValues = icolorValues.OfType<int>().ToList();
+
+            List<int[,]> inverseQUNTBlocks = new List<int[,]>();
+            inverseQUNTBlocks = zigZagMatrixBuilder(lcolorValues, 8, 8);
+            QuantificationInverse(inverseQUNTBlocks);
+
+            List<byte[,]> inverseDCTBlocks = new List<byte[,]>();
+            inverseDCTBlocks = inverseDCT(inverseQUNTBlocks);
+
+            // Listes qui contiennent tous les listes de tableaux 8x8 de chaque élément Y Cb Cr
+            List<byte[,]> inverseYBlocks = new List<byte[,]>();
+            List<byte[,]> inverseBBlocks = new List<byte[,]>();
+            List<byte[,]> inverseRBlocks = new List<byte[,]>();
+
+            for(int i = 0; i < yBlocks.Capacity; i++)
+            {
+                inverseYBlocks.Add(inverseDCTBlocks[i]);
+            }
+            for (int j = yBlocks.Capacity; j < yBlocks.Capacity + bBlocks.Capacity; j++)
+            {
+                inverseBBlocks.Add(inverseDCTBlocks[j]);
+            }
+            for (int k = yBlocks.Capacity + bBlocks.Capacity; k < yBlocks.Capacity + bBlocks.Capacity + rBlocks.Capacity; k++)
+            {
+                inverseRBlocks.Add(inverseDCTBlocks[k]);
+            }
+
+            // Création des tableaux 2D qui vont contenir les informations inverses de Y Cb Cr
+            byte[,] inverseYData = inversedecoupage8x8(inverseYBlocks);
+            byte[,] inverseBData = inversedecoupage8x8(inverseBBlocks);
+            byte[,] inverseRData = inversedecoupage8x8(inverseRBlocks);
+
+            ycbcr2rgb(inverseYData, inverseBData, inverseRData);
+            Console.ReadKey();
         }
 
         public static Bitmap rgb2ycbcr(Bitmap bmp, byte[,] yData, byte[,] bData, byte[,] rData)
@@ -102,6 +145,8 @@ namespace TP2_INF8770
                     double Cr = 128 + 0.713 * (red - Y);
 
                     yData[x, y] = (byte)Y;
+                    /*bData[x, y] = (byte)Cb;
+                    rData[x, y] = (byte)Cr;*/
                     Color nouvelleCouleur = new Color();
 
                     if (y % 2 == 0 && x % 2 == 0)
@@ -119,6 +164,7 @@ namespace TP2_INF8770
                     {
                         nouvelleCouleur = Color.FromArgb(yData[x, y], tempCb, tempCr);
                     }
+                    /*nouvelleCouleur = Color.FromArgb(yData[x, y], bData[x, y], rData[x, y]);*/
                     ycbcrBitmap.SetPixel(x, y, nouvelleCouleur);
                 }
             }
@@ -144,7 +190,8 @@ namespace TP2_INF8770
                 for (int x = 0; x < width; x++)
                 {
                     Y = (float)yData[x, y];
-
+                    /*Cb = (float)bData[x, y];
+                    Cr = (float)rData[x, y];*/
                     if (y % 2 == 0 && x % 2 == 0)
                     {
                         int suby = y / 2;
@@ -190,6 +237,32 @@ namespace TP2_INF8770
             return tab8x8;
         }
 
+        public static byte[,] inversedecoupage8x8(List<byte[,]> data)
+        {
+            int nbOfBlocks = data.Capacity;
+            int size = (int)Math.Sqrt(nbOfBlocks) * 8;
+            byte[,] block = new byte[size,size];
+            int index = 0;
+            int level = (int)Math.Sqrt(nbOfBlocks);
+            byte[,] tmpblock;
+            for (int i = 0; i < level; i++)
+            {
+                for (int j = 0; j < level; j++)
+                {
+                    tmpblock = data[index];
+                    index++;
+                    for (int x = 0; x < 8; x++)
+                    {
+                        for (int y = 0; y < 8; y++)
+                        {
+                            block[(j * 8) + y, (i * 8) + x] = tmpblock[x, y];
+                        }
+                    }
+                }
+            }
+            return block;
+        }
+
 
         public static List<int[,]> DCT(List<byte[,]> tab8x8)
         {
@@ -198,6 +271,7 @@ namespace TP2_INF8770
                 int[,] tabFrequence = new int[8, 8];
                 int n = 8;
                 double w, z;
+
                 for (int u = 0; u < n; u++)
                 {
                     for (int v = 0; v < n; v++)
@@ -215,8 +289,8 @@ namespace TP2_INF8770
                             {
                                 double value = tab8x8[i][x,y];
 
-                                double insideCos1 = (Math.PI * (2 * (x - 1) + 1) * (u - 1)) / (2 * n);
-                                double insideCos2 = (Math.PI * (2 * (y - 1) + 1) * (v - 1)) / (2 * n);
+                                double insideCos1 = (Math.PI * ((float)2 * x + (float)1) * u) / ((float)2 * n);
+                                double insideCos2 = (Math.PI * ((float)2 * y + (float)1) * v) / ((float)2 * n);
                                 sum += value * Math.Cos(insideCos1) * Math.Cos(insideCos2);
                             }
                         }
@@ -224,6 +298,47 @@ namespace TP2_INF8770
                         double dct_transform = factor * sum;
 
                         tabFrequence[u,v] = (int)dct_transform;
+                    }
+                }
+                ListTabFrequence.Add(tabFrequence);
+            }
+            return ListTabFrequence;
+        }
+
+        public static List<byte[,]> inverseDCT(List<int[,]> tab8x8)
+        {
+            List<byte[,]> ListTabFrequence = new List<byte[,]>();
+            for (int i = 0; i < tab8x8.Count; i++)
+            {
+                byte[,] tabFrequence = new byte[8, 8];
+                int n = 8;
+                double w, z;
+
+                for (int x = 0; x < n; x++)
+                {
+                    for (int y = 0; y < n; y++)
+                    {
+                        double sum = 0.0;
+                        for (int u = 0; u < n; u++)
+                        {
+                            for (int v = 0; v < n; v++)
+                            {
+                                if (u == 1) { w = Math.Sqrt(1.0 / n); }
+                                else { w = Math.Sqrt(2.0 / n); }
+                                if (v == 1) { z = Math.Sqrt(1.0 / n); }
+                                else { z = Math.Sqrt(2.0 / n); }
+                                double factor = w * z;
+                                double value = tab8x8[i][u, v];
+
+                                double insideCos1 = (Math.PI * ((float)2 * x + (float)1) * u) / ((float)2 * n);
+                                double insideCos2 = (Math.PI * ((float)2 * y + (float)1) * v) / ((float)2 * n);
+                                sum += factor * value * Math.Cos(insideCos1) * Math.Cos(insideCos2);
+                            }
+                        }
+
+                        double dct_transform = sum;
+
+                        tabFrequence[x, y] = (byte)dct_transform;
                     }
                 }
                 ListTabFrequence.Add(tabFrequence);
@@ -242,13 +357,31 @@ namespace TP2_INF8770
                                                         { 49, 64, 78, 87, 103, 121, 120, 101 },
                                                         { 72, 92, 95, 98, 112, 100, 103, 99 },};
 
+            /*int[,] matriceQuantification = new int[,] { { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },};*/
+
+            /*int[,] matriceQuantification = new int[,] { { 13, 23, 33, 43, 53, 63, 73, 83 },
+                                                        { 23, 33, 43, 53, 63, 73, 83, 93 },
+                                                        { 33, 43, 53, 63, 73, 83, 93, 103 },
+                                                        { 43, 53, 63, 73, 83, 93, 103, 113 },
+                                                        { 53, 63, 73, 83, 93, 103, 113, 123 },
+                                                        { 63, 73, 83, 93, 103, 113, 123, 133 },
+                                                        { 73, 83, 93, 103, 113, 123, 133, 143 },
+                                                        { 83, 93, 103, 113, 123, 133, 143, 153 },};*/
+
             for (int i = 0; i < listFrequence8x8.Count; i++)
             {
                 for (int x = 0; x < 8; x++)
                 {
                     for (int y = 0; y < 8; y++)
                     {
-                        listFrequence8x8[i][x, y] = (listFrequence8x8[i][x, y] * (matriceQuantification[x, y] / 2)) / matriceQuantification[x, y];
+                        listFrequence8x8[i][x, y] = listFrequence8x8[i][x, y] / matriceQuantification[x, y];
                     }
                 }
             }
@@ -264,6 +397,24 @@ namespace TP2_INF8770
                                                         { 24, 35, 55, 64, 81, 104, 113, 92 },
                                                         { 49, 64, 78, 87, 103, 121, 120, 101 },
                                                         { 72, 92, 95, 98, 112, 100, 103, 99 },};
+
+            /*int[,] matriceQuantification = new int[,] { { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },
+                                                        { 1, 1, 1, 1, 1, 1, 1, 1 },};*/
+
+            /*int[,] matriceQuantification = new int[,] { { 13, 23, 33, 43, 53, 63, 73, 83 },
+                                                        { 23, 33, 43, 53, 63, 73, 83, 93 },
+                                                        { 33, 43, 53, 63, 73, 83, 93, 103 },
+                                                        { 43, 53, 63, 73, 83, 93, 103, 113 },
+                                                        { 53, 63, 73, 83, 93, 103, 113, 123 },
+                                                        { 63, 73, 83, 93, 103, 113, 123, 133 },
+                                                        { 73, 83, 93, 103, 113, 123, 133, 143 },
+                                                        { 83, 93, 103, 113, 123, 133, 143, 153 },};*/
 
             for (int i = 0; i < listFrequence8x8.Count; i++)
             {
@@ -418,14 +569,14 @@ namespace TP2_INF8770
             return listData;
         }
 
-        static List<int[,]> zigZagMatrixBuilder(List<int[]> list, int n, int m)
+        static List<int[,]> zigZagMatrixBuilder(List<int> list, int n, int m)
         {
-            List<int> listData = new List<int[,]>();
+            List<int[,]> listData = new List<int[,]>();
 
             for (int index = 0; index < list.Count; index += (m*n)) {
                 int[,] arr = new int[8,8];
                 int row = 0, col = 0;
-                int reverseIndex = index + (m*n);
+                int reverseIndex = index;
                 // Boolean variable that will 
                 // true if we need to increment 
                 // 'row' valueotherwise false- 
@@ -441,7 +592,7 @@ namespace TP2_INF8770
                     {
 
                         arr[row, col] = list[reverseIndex];
-                        reverseIndex--;
+                        reverseIndex++;
 
                         if (i + 1 == len)
                             break;
@@ -513,7 +664,7 @@ namespace TP2_INF8770
                     for (int i = 0; i < len; ++i)
                     {
                         arr[row, col] = list[reverseIndex];
-                        reverseIndex--;
+                        reverseIndex++;
 
                         if (i + 1 == len)
                             break;
@@ -731,10 +882,10 @@ namespace TP2_INF8770
     public class Transform
     {
         public const char EOF = '\u007F';
-        public const char ESCAPE = '\\';
-
+        public const char ESCAPE = '/';
         public static string RunLengthEncode(string s)
         {
+            
             try
             {
                 string srle = string.Empty;
